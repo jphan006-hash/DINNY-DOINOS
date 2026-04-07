@@ -1,30 +1,22 @@
-<script src="game.js"></script>
+window.onload = function() {
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 let keys = {};
 
-document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+// FIX: prevent key issues
+document.addEventListener("keydown", e => {
+  keys[e.key.toLowerCase()] = true;
+});
+
+document.addEventListener("keyup", e => {
+  keys[e.key.toLowerCase()] = false;
+});
 
 // Players
-const player1 = { 
-  x:100, y:200, 
-  color:"lime", 
-  item:null, 
-  score:0,
-  speed:2,
-  type:"TRex"
-};
-
-const player2 = { 
-  x:600, y:200, 
-  color:"cyan", 
-  item:null, 
-  score:0,
-  speed:3.5,
-  type:"Gator"
-};
+const player1 = { x:100, y:200, color:"lime", item:null, score:0, speed:2, type:"TRex" };
+const player2 = { x:600, y:200, color:"cyan", item:null, score:0, speed:3.5, type:"Gator" };
 
 // Ingredients
 let ingredients = [
@@ -33,9 +25,9 @@ let ingredients = [
   {x:300,y:200,type:"egg"}
 ];
 
-// Delivery zone
 const delivery = {x:700,y:200,w:70,h:70};
 
+// Movement
 function movePlayer(p, up, down, left, right) {
   if(keys[up]) p.y -= p.speed;
   if(keys[down]) p.y += p.speed;
@@ -43,12 +35,15 @@ function movePlayer(p, up, down, left, right) {
   if(keys[right]) p.x += p.speed;
 }
 
+// Collision
 function isTouching(a, b) {
   return Math.abs(a.x - b.x) < 30 && Math.abs(a.y - b.y) < 30;
 }
 
+// Pickup + Deliver
 function handlePickup(player, key) {
   if(keys[key]) {
+
     if(!player.item) {
       for(let i=0;i<ingredients.length;i++){
         if(isTouching(player, ingredients[i])){
@@ -60,16 +55,13 @@ function handlePickup(player, key) {
     }
 
     if(player.item && isTouching(player, delivery)){
-      if(player.type === "TRex"){
-        player.score += 2;
-      } else {
-        player.score += 1;
-      }
+      player.score += (player.type === "TRex") ? 2 : 1;
       player.item = null;
     }
   }
 }
 
+// Draw
 function drawPlayer(p) {
   ctx.fillStyle = p.color;
 
@@ -119,6 +111,7 @@ function drawUI(){
   ctx.fillText("🐊 Gator Score: " + player2.score, 10, 40);
 }
 
+// Loop
 function update(){
   movePlayer(player1, "w","s","a","d");
   movePlayer(player2, "arrowup","arrowdown","arrowleft","arrowright");
@@ -146,5 +139,4 @@ function gameLoop(){
 
 gameLoop();
 
-
-<script src="game.js"></script>
+};
