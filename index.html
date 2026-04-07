@@ -1,17 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dino Cooking Multiplayer</title>
+<title>Dino Cooking Game</title>
 <style>
-  body { margin:0; overflow:hidden; background:#1b1b1b; }
-  canvas { background:#2e2e2e; display:block; margin:auto; }
+  body { margin:0; background:#111; }
+  canvas { display:block; margin:auto; background:#333; }
 </style>
 </head>
 <body>
 
 <canvas id="game" width="800" height="500"></canvas>
 
-<script src="game.js"></script>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+ctx.font = "14px Arial"; // IMPORTANT FIX
+
+let keys = {};
+
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+const player1 = { x:100, y:200, speed:2, item:null, score:0, type:"TRex" };
+const player2 = { x:600, y:200, speed:3.5, item:null, score:0, type:"Gator" };
+
+let ingredients = [
+  {x:200,y:100,type:"meat"},
+  {x:400,y:300,type:"veggie"}
+];
+
+const delivery = {x:700,y:200};
+
+function move(p, up, down, left, right){
+  if(keys[up]) p.y -= p.speed;
+  if(keys[down]) p.y += p.speed;
+  if(keys[left]) p.x -= p.speed;
+  if(keys[right]) p.x += p.speed;
+}
+
+function touch(a,b){
+  return Math.abs(a.x - b.x) < 30 && Math.abs(a.y - b.y) < 30;
+}
+
+function action(p,key){
+  if(keys[key]){
+    if(!p.item){
+      for(let i=0;i<ingredients.length;i++){
+        if(touch(p,ingredients[i])){
+          p.item = ingredients[i].type;
+          ingredients.splice(i,1);
+          break;
+        }
+      }
+    }
+    if(p.item && touch(p,delivery)){
+      p.score += (p.type==="TRex"?2:1);
+      p.item = null;
+    }
+  }
+}
+
+function drawPlayer(p){
+  ctx.fillStyle = (p.type==="TRex")?"lime":"cyan";
+
+  if(p.type==="TRex"){
+    ctx.fillRect(p.x,p.y,35,35);
+  } else {
+    ctx.fillRect(p.x,p.y,40,20);
+  }
+
+  if(p.item){
+    ctx.fillStyle="yellow";
+    ctx.fillText(p.item,p.x,p.y-5);
+  }
+}
+
+function loop(){
+  ctx.clearRect(0,0,800,500);
+
+  move(player1,"w","s","a","d");
+  move(player2,"arrowup","arrowdown","arrowleft","arrowright");
+
+  action(player1,"e");
+  action(player2,"/");
+
+  ctx.fillStyle="red";
+  ctx.fillRect(delivery.x,delivery.y,50,50);
+  ctx.fillStyle="white";
+  ctx.fillText("SERVE",delivery.x,delivery.y-5);
+
+  ingredients.forEach(i=>{
+    ctx.fillStyle="orange";
+    ctx.fillRect(i.x,i.y,20,20);
+    ctx.fillStyle="white";
+    ctx.fillText(i.type,i.x,i.y);
+  });
+
+  drawPlayer(player1);
+  drawPlayer(player2);
+
+  ctx.fillStyle="white";
+  ctx.fillText("TRex: "+player1.score,10,20);
+  ctx.fillText("Gator: "+player2.score,10,40);
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
 
 </body>
 </html>
